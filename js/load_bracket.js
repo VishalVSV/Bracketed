@@ -1,10 +1,11 @@
+const google_key = "AIzaSyBHGQ_OtXLyK70pPLEqC7eLj77-Mllf0gw";
 
 function get_sheets_req(sheet_id) {
-    return `https://sheets.googleapis.com/v4/spreadsheets/${sheet_id}/values/'BracketedData'!A1:Z?key=AIzaSyBzju6OEbSXAah79LidRQVbzWJFxT0rXjc&majorDimension=COLUMNS`;
+    return `https://sheets.googleapis.com/v4/spreadsheets/${sheet_id}/values/'BracketedData'!A1:Z?key=${google_key}&majorDimension=COLUMNS`;
 }
 
 function get_sheets_data(sheet_id) {
-    return `https://sheets.googleapis.com/v4/spreadsheets/${sheet_id}?key=AIzaSyBzju6OEbSXAah79LidRQVbzWJFxT0rXjc`;
+    return `https://sheets.googleapis.com/v4/spreadsheets/${sheet_id}?key=${google_key}`;
 }
 
 var bracket = null;
