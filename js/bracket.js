@@ -3,8 +3,49 @@ class Bracket {
         this.rounds = [];
     }
 
-    to_matrix() {
+    populate(data) {
+        for(let i = 0;i < data.length; i++) {
+            var real_j = 0;
+            for(let j = 0; j < this.rounds[i].teams.length; j++) {
+                while (data[i][real_j + 2] == "") {
+                    real_j++;
+                }
+                console.log(data[i][real_j + 2]);
+                this.rounds[i].teams[j].name = data[i][real_j + 2] || "";
+                real_j++;
+            }
+        }
+    }
 
+    update() {
+        for(let i = 0; i < this.rounds.length - 1; i++) {
+            for(let j = 0; j < this.rounds[i].teams.length; j += 2) {
+                this.rounds[i].teams[j].cell.style.opacity = 1;
+                this.rounds[i].teams[j].cell.style.textDecoration = "none";
+                
+                this.rounds[i].teams[j + 1].cell.style.opacity = 1;
+                this.rounds[i].teams[j + 1].cell.style.textDecoration = "none";
+                if(this.rounds[i].teams[j].name != "" && this.rounds[i].teams[j + 1].name != "")
+                {
+                    if(includes(this.rounds[i + 1].teams, this.rounds[i].teams[j].name) && !includes(this.rounds[i + 1].teams, this.rounds[i].teams[j + 1].name)) {
+                        this.rounds[i].teams[j + 1].cell.style.opacity = 0.5;
+                        this.rounds[i].teams[j + 1].cell.style.textDecoration = "line-through";
+                    }
+                    else if(!includes(this.rounds[i + 1].teams, this.rounds[i].teams[j].name) && includes(this.rounds[i + 1].teams, this.rounds[i].teams[j + 1].name)) {
+                        this.rounds[i].teams[j].cell.style.opacity = 0.5;
+                        this.rounds[i].teams[j].cell.style.textDecoration = "line-through";
+                    }
+                }
+                this.rounds[i].teams[j].cell.innerText = this.rounds[i].teams[j].name;
+                this.rounds[i].teams[j + 1].cell.innerText = this.rounds[i].teams[j + 1].name;
+            }
+        }
+
+        this.rounds[this.rounds.length - 1].teams[0].cell.innerText = this.rounds[this.rounds.length - 1].teams[0].name;
+
+    }
+
+    to_matrix() {
         function make_cell(type, params) {
             var cell = document.createElement("td");
             cell.style.paddingLeft = "10px";
@@ -82,32 +123,50 @@ class Bracket {
             }
             for (let index = 0; index < this.rounds[i].teams.length; index+=2) {
                 //console.log(this.rounds[i].teams[index]);
-                var top_team = this.rounds[i].teams[index] != undefined ? this.rounds[i].teams[index] == "" ? tbd : this.rounds[i].teams[index] : tbd;
-                var bottom_team = this.rounds[i].teams[index + 1] != undefined ? this.rounds[i].teams[index + 1] == "" ? tbd : this.rounds[i].teams[index + 1] : tbd;
+                var top_team = this.rounds[i].teams[index] != undefined ? this.rounds[i].teams[index].name == "" ? tbd : this.rounds[i].teams[index].name : tbd;
+                var bottom_team = this.rounds[i].teams[index + 1] != undefined ? this.rounds[i].teams[index + 1].name == "" ? tbd : this.rounds[i].teams[index + 1].name : tbd;
 
                 if(i + 1 < this.rounds.length) {
                     if(top_team == tbd || bottom_team == tbd) {
-                        column.push(make_cell("text", top_team));
-                        column.push(make_cell("text", bottom_team));
+                        var top_cell = make_cell("text", top_team);
+                        var bottom_cell = make_cell("text", bottom_team);
+                        column.push(top_cell);
+                        column.push(bottom_cell)
+                        this.rounds[i].teams[index].cell = top_cell;
+                        this.rounds[i].teams[index + 1].cell = bottom_cell;
                     }
                     else {
-                        if(!this.rounds[i + 1].teams.includes(top_team) && this.rounds[i + 1].teams.includes(bottom_team)) {
-                            column.push(make_cell("text_loser", top_team));
-                            column.push(make_cell("text", bottom_team));
+                        if(!includes(this.rounds[i + 1].teams,this.rounds[i].teams[index].name) && includes(this.rounds[i + 1].teams,this.rounds[i].teams[index + 1].name)) {
+                            var top_cell = make_cell("text_loser", top_team), bottom_cell = make_cell("text", bottom_team);
+                            column.push(top_cell);
+                            column.push(bottom_cell)
+                            this.rounds[i].teams[index].cell = top_cell;
+                            this.rounds[i].teams[index + 1].cell = bottom_cell;
                         }
-                        else if(!this.rounds[i + 1].teams.includes(bottom_team) && this.rounds[i + 1].teams.includes(top_team)) {
-                            column.push(make_cell("text", top_team));
-                            column.push(make_cell("text_loser", bottom_team));
+                        else if(!includes(this.rounds[i + 1].teams, this.rounds[i].teams[index + 1].name) && includes(this.rounds[i + 1].teams, this.rounds[i].teams[index].name)) {
+                            var top_cell = make_cell("text", top_team), bottom_cell = make_cell("text_loser", bottom_team);
+                            column.push(top_cell);
+                            column.push(bottom_cell)
+                            this.rounds[i].teams[index].cell = top_cell;
+                            this.rounds[i].teams[index + 1].cell = bottom_cell;
                         }
                         else {
-                            column.push(make_cell("text", top_team));
-                            column.push(make_cell("text", bottom_team));
+                            var top_cell = make_cell("text", top_team);
+                            var bottom_cell = make_cell("text", bottom_team);
+                            column.push(top_cell);
+                            column.push(bottom_cell)
+                            this.rounds[i].teams[index].cell = top_cell;
+                            this.rounds[i].teams[index + 1].cell = bottom_cell;
                         }
                     }
                 }
                 else {
-                    column.push(make_cell("text", top_team));
-                    column.push(make_cell("text", bottom_team));
+                    var top_cell = make_cell("text", top_team);
+                    var bottom_cell = make_cell("text", bottom_team);
+                    column.push(top_cell);
+                    column.push(bottom_cell)
+                    this.rounds[i].teams[index].cell = top_cell;
+                    this.rounds[i].teams[index + 1].cell = bottom_cell;
                 }
 
                 if(index + 2 < this.rounds[i].teams.length) {
@@ -184,8 +243,10 @@ class Bracket {
 
         if(this.rounds[this.rounds.length - 1].teams.length == 1) {
             var winner_col = get_empty();
-            winner_col[height / 2 - 1] = make_cell("winner",this.rounds[this.rounds.length - 1].teams[0]);
-            winner_col.unshift(make_cell("round_name", "Finals"));
+            var cell = make_cell("winner",this.rounds[this.rounds.length - 1].teams[0].name);
+            winner_col[height / 2 - 1] = cell;
+            this.rounds[this.rounds.length - 1].teams[0].cell = cell;
+            winner_col.unshift(make_cell("round_name", this.rounds[this.rounds.length - 1].name));
             matrix.push(winner_col);
         }
         return matrix;
@@ -195,7 +256,14 @@ class Bracket {
 class Round {
     constructor(name, teams) {
         this.name = name;
-        this.teams = teams.filter(e => e.trim() != "");
+        this.teams = teams.filter(e => e.trim() != "").map(team => new Team(team));
+    }
+}
+
+class Team {
+    constructor(name) {
+        this.name = name;
+        this.cell = null;
     }
 }
 
@@ -221,5 +289,17 @@ function matrix_to_table(matrix) {
 
     table.style.marginTop = "100px";
 
+    table.classList.add("bracket");
+
     return table;
+}
+
+
+function includes(arr, val) {
+    for(let i = 0; i < arr.length; i++){
+        if(arr[i].name == val)
+            return true;
+    }
+
+    return false;
 }

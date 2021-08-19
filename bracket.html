@@ -19,12 +19,19 @@
                 <br>
             </div>
             <div id="settings"></div>
+            <div id="changelog" style="visibility: hidden;">
+                <strong>Changelog</strong><br>
+                + Made auto refreshing smooother<br>
+                + Added animated fade out<br>
+                + Added changelog (lmao)<br>
+            </div>
         </div>
 
         <table style="position: absolute;bottom:0;right:0;color:white;text-align: center;margin: 5px;">
             <tr>
                 <td style="vertical-align: middle;">Made by Vertex&nbsp;</td>
                 <td><a  href="https://github.com/VishalVSV" target="_blank"><img src="https://github.githubassets.com/images/modules/site/icons/footer/github-mark.svg"></a></td>
+                <td>&nbsp;<a href='#' onclick="toggle_changelog()">Changelog</a></td>
                 <td>&nbsp;</td>
             </tr>
         </table>
@@ -108,10 +115,20 @@
                     if(settings.auto_refresh) stop_auto_refresh();
                     else start_auto_refresh();
                 }
+                else if(e.key == 'r') {
+                    load_bracket(params.get("id"));
+                    customAlert(new Alert("ok", "Reloaded"));
+                }
                 else if(e.key == "H") {
                     document.getElementById("help").hidden = !document.getElementById("help").hidden;
                 }
             });
+
+            function toggle_changelog() {
+                var changelog = document.getElementById("changelog");
+                if(changelog.style.visibility == "hidden") changelog.style.visibility = "visible";
+                else changelog.style.visibility = "hidden";
+            }
 
             update_settings();
             load_debug_data();

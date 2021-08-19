@@ -14,3 +14,8 @@ table.bracket th:not(:empty) {
     border: 1px solid white;
     padding: 2 10 2 10;
 }
+
+table.bracket td {
+    transition-property: opacity;
+    transition-duration: 2s;
+}

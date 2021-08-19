@@ -23,7 +23,9 @@
                 var id = res.groups.id1 || res.groups.id2;
 
                 if(id != null) {
-                    window.location = `bracket?id=${id}`;
+                    var auto_refresh = document.getElementById("auto_refresh").checked;
+
+                    window.location = `bracket?id=${id}${auto_refresh ? "&auto_refresh" : ""}`;
                 }
             }
         </script>
@@ -43,7 +45,10 @@
 
             <p class="fade fade-in-section">4. Enter the google sheets link</p>
             <div>
-                <input class="fade fade-in-section" type="text" id="id" pattern="https:\/\/docs\.google\.com\/spreadsheets\/d\/(.+)\/edit\?usp=sharing*" title="Enter a google sheets link">
+                <input class="fade fade-in-section" type="text" id="id" pattern="https:\/\/docs\.google\.com\/spreadsheets\/d\/(.+)\/edit\?usp=sharing*" title="Enter a google sheets link"><br>
+                <br>
+                <span class="fade fade-in-section">Auto-Refresh: </span>
+                <input class="fade fade-in-section" type="checkbox" id="auto_refresh"><br><br>
                 <input class="fade fade-in-section" type="button" onclick="submit()" value="Submit">
             </div>
             <br><br><br><br><br>
