@@ -1,0 +1,16 @@
+.error {
+    background-color: red;
+    color:white;
+}
+
+.ok {
+    background-color: green;
+    color: white;
+}
+
+.alert {
+    padding: 2 10 2 10;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+    text-align: right;
+}

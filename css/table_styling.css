@@ -1,0 +1,16 @@
+tr.spacing {
+    height: 0.5em;
+}
+
+table.bracket {
+    background-color: rgb(48,48,48);
+    color:white;
+    font-size: 1em;
+    border-spacing: 0px;
+    padding: 10 20 10 20;
+}
+
+table.bracket th:not(:empty) {
+    border: 1px solid white;
+    padding: 2 10 2 10;
+}

@@ -1,0 +1,121 @@
+<html>
+    <head>
+        <script src="js/bracket.js"></script>
+        <script src="js/load_bracket.js"></script>
+        <script src="js/alerts.js">
+
+        </script>
+        <link rel="stylesheet" href="css/table_styling.css">
+        <link rel="stylesheet" href="css/alerts.css">
+    </head>
+    <body style="background-color: rgb(48,48,48);font-family: 'Courier New', Courier, monospace;">        
+        <div id="bracket" style="display: flex;justify-content: center;align-items: center;"><div></div></div>
+        <div style="position: absolute;top:0;right:0;" id="alerts">
+            
+        </div>
+        <div style="position: absolute;top:0;left:0;color:white;">
+            <div id="help">
+                Shift+R: Toggle auto refresh<br>
+                Shift+H: Toggle help<br>
+                <br>
+            </div>
+            <div id="settings"></div>
+        </div>
+
+        <table style="position: absolute;bottom:0;right:0;color:white;text-align: center;margin: 5px;">
+            <tr>
+                <td style="vertical-align: middle;">Made by Vertex&nbsp;</td>
+                <td><a  href="https://github.com/VishalVSV" target="_blank"><img src="https://github.githubassets.com/images/modules/site/icons/footer/github-mark.svg"></a></td>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+
+        <script>
+            var settings_panel = document.getElementById("settings");
+
+            var settings = {
+                auto_refresh: false,
+                debug: false,
+                sheet_name: "",
+                sheet_url: ""
+            }
+
+            const params = new URLSearchParams(location.search);
+
+            var refresh_handler = null;
+
+            if(params.get("id") != undefined) {
+                //1PToKUtw3rBWmU5AQL84wybatoKVYH_PynjCSLdH5vdA
+                load_bracket(params.get("id"));
+            }
+            if(params.get("auto_refresh") != undefined) {
+                start_auto_refresh();
+            }
+            
+            function load_debug_data() {
+                var xmlHttp = new XMLHttpRequest();
+                xmlHttp.onreadystatechange = function () {
+                    if (xmlHttp.readyState == 4) {
+                        var res = JSON.parse(xmlHttp.responseText);
+                        settings.sheet_name = res.properties.title;
+                        settings.sheet_url = res.spreadsheetUrl;
+                        update_settings();
+
+                        document.title = settings.sheet_name;
+                    }
+                };
+
+                xmlHttp.open("GET", get_sheets_data(params.get("id")), true);
+                xmlHttp.send(null);
+            }
+
+            if(params.get("debug") != undefined) {
+                settings.debug = true;
+            }
+
+            function stop_auto_refresh() {
+                if (refresh_handler != null) {
+                    window.clearInterval(refresh_handler);
+                    refresh_handler = null;
+                    settings.auto_refresh = false;
+                    customAlert(new Alert("ok", "Stopped auto refresh"));
+                    update_settings();
+                }
+            }
+
+            function start_auto_refresh() {
+                if (refresh_handler == null) {
+                    settings.auto_refresh = true;
+                    refresh_handler = window.setInterval(function() {
+                        if(params.get("id") != undefined) {
+                            //1PToKUtw3rBWmU5AQL84wybatoKVYH_PynjCSLdH5vdA
+                            load_bracket(params.get("id"));
+                        }
+                    }, 2000);
+                    customAlert(new Alert("ok", "Started auto refresh"));
+                    update_settings();
+                }
+            }
+
+
+            function update_settings() {
+                if(settings.debug) {
+                    settings_panel.innerHTML = `Auto-Refresh: ${settings.auto_refresh ? "Enabled" : "Disabled"}<br>Sheet-Name: ${settings.sheet_name}<br><a href="${settings.sheet_url}" target=_blank>Sheet link</a>`
+                }
+            }
+
+            document.addEventListener('keydown', function(e) {
+                if(e.key == 'R') {
+                    if(settings.auto_refresh) stop_auto_refresh();
+                    else start_auto_refresh();
+                }
+                else if(e.key == "H") {
+                    document.getElementById("help").hidden = !document.getElementById("help").hidden;
+                }
+            });
+
+            update_settings();
+            load_debug_data();
+        </script>
+    </body>
+</html>
