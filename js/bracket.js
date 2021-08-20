@@ -1,6 +1,9 @@
 class Bracket {
     constructor() {
         this.rounds = [];
+        this.type = "two_sided";
+        this.types = ["default", "two_sided"];
+        this.reload = false;
     }
 
     populate(data) {
@@ -46,54 +49,366 @@ class Bracket {
     }
 
     to_matrix() {
-        function make_cell(type, params) {
-            var cell = document.createElement("td");
-            cell.style.paddingLeft = "10px";
-            if (type == "line_right") {
-                cell.style.border = "1px solid white";
-                cell.style.borderStyle = "none solid none none";
-            }
-            else if(type == "line_top_right") {
-                cell.style.border = "1px solid white";
-                cell.style.borderStyle = "solid solid none none";
-            }
-            else if(type == "line_bottom_right") {
-                cell.style.border = "1px solid white";
-                cell.style.borderStyle = "none solid solid none";
-            }
-            else if(type == "line_bottom") {
-                cell.style.border = "1px solid white";
-                cell.style.borderStyle = "none none solid none";
-            }
-            else if(type == "placeholder") {
-                cell.innerText = "\xa0";
-            }
-            else if(type == "text") {
-                cell.style.border = "1px solid white";
-                cell.innerText = params;
-            }
-            else if(type == "text_loser") {
-                cell.style.border = "1px solid white";
-                cell.innerText = params;
-                cell.style.textDecoration = "line-through";
-                cell.style.opacity = 0.5;
-            }
-            else if(type == "winner") {
-                cell.innerText = params;
-                cell.rowSpan = 2;
-                cell.style.textAlign = "center";
-                cell.style.verticalAlign = "middle";
-            }
-            else if(type == "round_name") {
-                cell.innerText = params;
-                cell.style.marginBottom = "4em";
-                cell.style.backgroundColor = "rgb(24,24,24)";
-                cell.style.padding = "2 10 2 10";
-                cell.style.border = "1px solid white";
-                cell.style.opacity = 0.8;
-            }
-            return cell;
+        if(this.type == "default") {
+            return this.default_matrix();
         }
+        else if(this.type == "two_sided") {
+            return this.two_sided_matrix();
+        }
+    }
+
+    two_sided_matrix() {
+        var height = ((this.rounds[0].teams.length / 2) - 1) * 2 + this.rounds[0].teams.length + 2;
+
+        function get_empty() {
+            var empty_col = [];
+            for (let o = 0; o < height; o++) {
+                var cell = make_cell("placeholder");
+                cell.style.minWidth = 50;
+                empty_col.push(cell);
+            }
+            return empty_col;
+        }
+
+        var winner_col = get_empty();
+        var winner_cell = make_cell("winner", this.rounds[this.rounds.length - 1].teams[0].name);
+        this.rounds[this.rounds.length - 1].teams[0].cell = winner_cell;
+        winner_col[height / 4] = winner_cell;
+        winner_col[height / 4 + 1] = null;
+
+        winner_col[0] = make_cell("round_name", this.rounds[this.rounds.length - 1].name);
+
+        var right_padding = get_empty();
+        right_padding[height / 4] = make_cell("line_bottom");
+
+        var left_padding = get_empty();
+        left_padding[height / 4] = make_cell("line_bottom");
+
+        return this.standard_left().concat([left_padding, winner_col, right_padding]).concat(this.standard_right());
+    }
+
+    standard_left() {
+        var spacing = 2;
+        var offset = 0;
+        var i = 0;
+        var matrix = [];
+        var height = ((this.rounds[0].teams.length / 2) - 1) * 2 + this.rounds[0].teams.length + 2;
+
+        function get_empty() {
+            var empty_col = [];
+            for (let o = 0; o < height; o++) {
+                var cell = make_cell("placeholder");
+                cell.style.minWidth = 50;
+                empty_col.push(cell);
+            }
+            return empty_col;
+        }
+
+        const tbd = "    ";
+
+        do {
+            var column = [];
+            column.push(make_cell("round_name",this.rounds[i].name));
+            column.push(make_cell("placeholder"));
+
+            for (let o = 0; o < offset; o++) {
+                column.push(make_cell("placeholder"));
+            }
+            for (let index = 0; index < this.rounds[i].teams.length / 2; index+=2) {
+                //console.log(this.rounds[i].teams[index]);
+                var top_team = this.rounds[i].teams[index] != undefined ? this.rounds[i].teams[index].name == "" ? tbd : this.rounds[i].teams[index].name : tbd;
+                var bottom_team = this.rounds[i].teams[index + 1] != undefined ? this.rounds[i].teams[index + 1].name == "" ? tbd : this.rounds[i].teams[index + 1].name : tbd;
+
+                if(i + 1 < this.rounds.length) {
+                    if(top_team == tbd || bottom_team == tbd) {
+                        var top_cell = make_cell("text", top_team);
+                        var bottom_cell = make_cell("text", bottom_team);
+                        column.push(top_cell);
+                        column.push(bottom_cell)
+                        this.rounds[i].teams[index].cell = top_cell;
+                        this.rounds[i].teams[index + 1].cell = bottom_cell;
+                    }
+                    else {
+                        if(!includes(this.rounds[i + 1].teams,this.rounds[i].teams[index].name) && includes(this.rounds[i + 1].teams,this.rounds[i].teams[index + 1].name)) {
+                            var top_cell = make_cell("text_loser", top_team), bottom_cell = make_cell("text", bottom_team);
+                            column.push(top_cell);
+                            column.push(bottom_cell)
+                            this.rounds[i].teams[index].cell = top_cell;
+                            this.rounds[i].teams[index + 1].cell = bottom_cell;
+                        }
+                        else if(!includes(this.rounds[i + 1].teams, this.rounds[i].teams[index + 1].name) && includes(this.rounds[i + 1].teams, this.rounds[i].teams[index].name)) {
+                            var top_cell = make_cell("text", top_team), bottom_cell = make_cell("text_loser", bottom_team);
+                            column.push(top_cell);
+                            column.push(bottom_cell)
+                            this.rounds[i].teams[index].cell = top_cell;
+                            this.rounds[i].teams[index + 1].cell = bottom_cell;
+                        }
+                        else {
+                            var top_cell = make_cell("text", top_team);
+                            var bottom_cell = make_cell("text", bottom_team);
+                            column.push(top_cell);
+                            column.push(bottom_cell)
+                            this.rounds[i].teams[index].cell = top_cell;
+                            this.rounds[i].teams[index + 1].cell = bottom_cell;
+                        }
+                    }
+                }
+                else {
+                    var top_cell = make_cell("text", top_team);
+                    var bottom_cell = make_cell("text", bottom_team);
+                    column.push(top_cell);
+                    column.push(bottom_cell)
+                    this.rounds[i].teams[index].cell = top_cell;
+                    this.rounds[i].teams[index + 1].cell = bottom_cell;
+                }
+
+                if(index + 2 < this.rounds[i].teams.length) {
+                    for (let o = 0; o < spacing; o++) {
+                        column.push(make_cell("placeholder"));
+                    }
+                }
+            }
+            
+            while (column.length < height) {
+                column.push(make_cell("placeholder"));
+            }
+
+            matrix.push(column);
+
+            if(i + 1 < this.rounds.length - 2) {
+                var col = get_empty();
+                var j = offset;
+                var l = 0;
+                while(j < height / 2) {
+                    for (let o = 0; o < (spacing / 2) + 2; o++) {
+                        
+                        if(l % 2 == 0) {
+                            col[j + o] = make_cell("line_right");
+                        }
+                        else {
+                            col[j - o] = make_cell("line_right");
+                        }
+                        //console.log(this.rounds.length);
+                    }
+                    if(l % 2 == 0) {
+                        col[j + 1] = make_cell("line_top_right");
+                        col[j] = make_cell("placeholder");
+                    }
+                    else 
+                        col[j] = make_cell("line_bottom_right");
+
+                    l++;
+                    j += spacing + 2;
+                }
+
+                col.unshift(make_cell("placeholder"));
+                col.unshift(make_cell("placeholder"));
+
+                matrix.push(col);
+            }
+            offset = spacing;
+            spacing = 2 * (spacing + 1);
+            i++;
+            
+            if(i < this.rounds.length - 2) {
+                var col = get_empty();
+                var j = offset;
+                while(j < height / 2) {
+                    col[j] = make_cell("line_bottom");
+                    col[j + 1] = make_cell("placeholder");
+                    j += spacing + 2;
+                }
+
+                col.unshift(make_cell("placeholder"));
+                col.unshift(make_cell("placeholder"));
+
+                matrix.push(col);
+            }
+        } 
+        while(i < this.rounds.length - 2);
+
+        var last = get_empty();
+        last[(offset / 2)] = make_cell("line_bottom");
+        
+        last.unshift(make_cell("placeholder"));
+        
+        matrix.push(last);
+
+        if(this.rounds[this.rounds.length - 2].teams.length == 2) {
+            var winner_col = get_empty();
+            var cell = make_cell("winner",this.rounds[this.rounds.length - 2].teams[0].name);
+            cell.style.border = "1px solid white";
+            winner_col[offset / 2] = cell;
+            winner_col[offset / 2 + 1] = null;
+            this.rounds[this.rounds.length - 2].teams[0].cell = cell;
+            winner_col.unshift(make_cell("round_name", this.rounds[this.rounds.length - 2].name));
+            matrix.push(winner_col);
+        }
+        return matrix;
+    }
+
+    standard_right() {
+        var spacing = 2;
+        var offset = 0;
+        var i = 0;
+        var matrix = [];
+        var height = ((this.rounds[0].teams.length / 2) - 1) * 2 + this.rounds[0].teams.length + 2;
+
+        function get_empty() {
+            var empty_col = [];
+            for (let o = 0; o < height; o++) {
+                var cell = make_cell("placeholder");
+                cell.style.minWidth = 50;
+                empty_col.push(cell);
+            }
+            return empty_col;
+        }
+
+        const tbd = "    ";
+
+        do {
+            var column = [];
+            column.push(make_cell("round_name",this.rounds[i].name));
+            column.push(make_cell("placeholder"));
+
+            for (let o = 0; o < offset; o++) {
+                column.push(make_cell("placeholder"));
+            }
+            for (let index = this.rounds[i].teams.length / 2; index < this.rounds[i].teams.length; index+=2) {
+                //console.log(this.rounds[i].teams[index]);
+                var top_team = this.rounds[i].teams[index] != undefined ? this.rounds[i].teams[index].name == "" ? tbd : this.rounds[i].teams[index].name : tbd;
+                var bottom_team = this.rounds[i].teams[index + 1] != undefined ? this.rounds[i].teams[index + 1].name == "" ? tbd : this.rounds[i].teams[index + 1].name : tbd;
+
+                if(i + 1 < this.rounds.length) {
+                    if(top_team == tbd || bottom_team == tbd) {
+                        var top_cell = make_cell("text", top_team);
+                        var bottom_cell = make_cell("text", bottom_team);
+                        column.push(top_cell);
+                        column.push(bottom_cell)
+                        this.rounds[i].teams[index].cell = top_cell;
+                        this.rounds[i].teams[index + 1].cell = bottom_cell;
+                    }
+                    else {
+                        if(!includes(this.rounds[i + 1].teams,this.rounds[i].teams[index].name) && includes(this.rounds[i + 1].teams,this.rounds[i].teams[index + 1].name)) {
+                            var top_cell = make_cell("text_loser", top_team), bottom_cell = make_cell("text", bottom_team);
+                            column.push(top_cell);
+                            column.push(bottom_cell)
+                            this.rounds[i].teams[index].cell = top_cell;
+                            this.rounds[i].teams[index + 1].cell = bottom_cell;
+                        }
+                        else if(!includes(this.rounds[i + 1].teams, this.rounds[i].teams[index + 1].name) && includes(this.rounds[i + 1].teams, this.rounds[i].teams[index].name)) {
+                            var top_cell = make_cell("text", top_team), bottom_cell = make_cell("text_loser", bottom_team);
+                            column.push(top_cell);
+                            column.push(bottom_cell)
+                            this.rounds[i].teams[index].cell = top_cell;
+                            this.rounds[i].teams[index + 1].cell = bottom_cell;
+                        }
+                        else {
+                            var top_cell = make_cell("text", top_team);
+                            var bottom_cell = make_cell("text", bottom_team);
+                            column.push(top_cell);
+                            column.push(bottom_cell)
+                            this.rounds[i].teams[index].cell = top_cell;
+                            this.rounds[i].teams[index + 1].cell = bottom_cell;
+                        }
+                    }
+                }
+                else {
+                    var top_cell = make_cell("text", top_team);
+                    var bottom_cell = make_cell("text", bottom_team);
+                    column.push(top_cell);
+                    column.push(bottom_cell)
+                    this.rounds[i].teams[index].cell = top_cell;
+                    this.rounds[i].teams[index + 1].cell = bottom_cell;
+                }
+
+                if(index + 2 < this.rounds[i].teams.length) {
+                    for (let o = 0; o < spacing; o++) {
+                        column.push(make_cell("placeholder"));
+                    }
+                }
+            }
+            
+            while (column.length < height) {
+                column.push(make_cell("placeholder"));
+            }
+
+            matrix.push(column);
+
+            if(i + 1 < this.rounds.length - 2) {
+                var col = get_empty();
+                var j = offset;
+                var l = 0;
+                while(j < height / 2) {
+                    for (let o = 0; o < (spacing / 2) + 2; o++) {
+                        
+                        if(l % 2 == 0) {
+                            col[j + o] = make_cell("line_left");
+                        }
+                        else {
+                            col[j - o] = make_cell("line_left");
+                        }
+                        //console.log(this.rounds.length);
+                    }
+                    if(l % 2 == 0) {
+                        col[j + 1] = make_cell("line_top_left");
+                        col[j] = make_cell("placeholder");
+                    }
+                    else 
+                        col[j] = make_cell("line_bottom_left");
+
+                    l++;
+                    j += spacing + 2;
+                }
+
+                col.unshift(make_cell("placeholder"));
+                col.unshift(make_cell("placeholder"));
+
+                matrix.push(col);
+            }
+            offset = spacing;
+            spacing = 2 * (spacing + 1);
+            i++;
+            
+            if(i < this.rounds.length - 2) {
+                var col = get_empty();
+                var j = offset;
+                while(j < height / 2) {
+                    col[j] = make_cell("line_bottom");
+                    col[j + 1] = make_cell("placeholder");
+                    j += spacing + 2;
+                }
+
+                col.unshift(make_cell("placeholder"));
+                col.unshift(make_cell("placeholder"));
+
+                matrix.push(col);
+            }
+        } 
+        while(i < this.rounds.length - 2);
+
+        var last = get_empty();
+        last[(offset / 2)] = make_cell("line_bottom");
+        
+        last.unshift(make_cell("placeholder"));
+        
+        matrix.push(last);
+
+        if(this.rounds[this.rounds.length - 2].teams.length == 2) {
+            var winner_col = get_empty();
+            var cell = make_cell("winner",this.rounds[this.rounds.length - 2].teams[1].name);
+            cell.style.border = "1px solid white";
+            winner_col[offset / 2] = cell;
+            winner_col[offset / 2 + 1] = null;
+            this.rounds[this.rounds.length - 2].teams[1].cell = cell;
+            winner_col.unshift(make_cell("round_name", this.rounds[this.rounds.length - 2].name));
+
+            matrix.push(winner_col);
+        }
+        return matrix.reverse();
+    }
+
+    default_matrix() {
 
         var spacing = 2;
         var offset = 0;
@@ -278,7 +593,13 @@ function matrix_to_table(matrix) {
         var row = document.createElement("tr");
 
         for (let x = 0; x < width; x++) {
-            row.appendChild(matrix[x][y]);
+            try {
+                if(matrix[x][y] != null)
+                row.appendChild(matrix[x][y]);
+            }
+            catch(e) {
+                console.log(x + " " + y);
+            }
         }
         table.appendChild(row);
     }
@@ -302,4 +623,66 @@ function includes(arr, val) {
     }
 
     return false;
+}
+
+
+function make_cell(type, params) {
+    var cell = document.createElement("td");
+    cell.style.paddingLeft = "10px";
+    if (type == "line_right") {
+        cell.style.border = "1px solid white";
+        cell.style.borderStyle = "none solid none none";
+    }
+    else if (type == "line_left") {
+        cell.style.border = "1px solid white";
+        cell.style.borderStyle = "none none none solid";
+    }
+    else if(type == "line_top_right") {
+        cell.style.border = "1px solid white";
+        cell.style.borderStyle = "solid solid none none";
+    }
+    else if(type == "line_top_left") {
+        cell.style.border = "1px solid white";
+        cell.style.borderStyle = "solid none none solid";
+    }
+    else if(type == "line_bottom_right") {
+        cell.style.border = "1px solid white";
+        cell.style.borderStyle = "none solid solid none";
+    }
+    else if(type == "line_bottom_left") {
+        cell.style.border = "1px solid white";
+        cell.style.borderStyle = "none none solid solid";
+    }
+    else if(type == "line_bottom") {
+        cell.style.border = "1px solid white";
+        cell.style.borderStyle = "none none solid none";
+    }
+    else if(type == "placeholder") {
+        cell.innerText = "\xa0";
+    }
+    else if(type == "text") {
+        cell.style.border = "1px solid white";
+        cell.innerText = params;
+    }
+    else if(type == "text_loser") {
+        cell.style.border = "1px solid white";
+        cell.innerText = params;
+        cell.style.textDecoration = "line-through";
+        cell.style.opacity = 0.5;
+    }
+    else if(type == "winner") {
+        cell.innerText = params;
+        cell.rowSpan = 2;
+        cell.style.textAlign = "center";
+        cell.style.verticalAlign = "middle";
+    }
+    else if(type == "round_name") {
+        cell.innerText = params;
+        cell.style.marginBottom = "4em";
+        cell.style.backgroundColor = "rgb(24,24,24)";
+        cell.style.padding = "2 10 2 10";
+        cell.style.border = "1px solid white";
+        cell.style.opacity = 0.8;
+    }
+    return cell;
 }

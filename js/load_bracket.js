@@ -28,8 +28,11 @@ function load_bracket(sheet_id) {
                 var res = JSON.parse(xmlHttp.responseText);
                 console.log(res.values);
                 if(res.values[0][0].trim().toLowerCase() == "ok") {
-                    if(bracket == null) {
+                    if(bracket == null || bracket.reload) {
                         var local_bracket = new Bracket();
+
+                        local_bracket.type = bracket != null ? bracket.type : "default";
+
                         var team_count = res.values[0].slice(2).length;
                         while (!isPowerOfTwo(team_count)) team_count++;
                         for (let i = 0; i < res.values.length; i++) {
@@ -53,6 +56,7 @@ function load_bracket(sheet_id) {
                         bracket.populate(res.values);
                         bracket.update();
                     }
+                    update_settings();
                 }
                 else {
                     if(!warned) {
