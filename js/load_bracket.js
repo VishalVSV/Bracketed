@@ -1,4 +1,4 @@
-const google_key = "AIzaSyBzju6OEbSXAah79LidRQVbzWJFxT0rXjc";
+const google_key = "AIzaSyBHGQ_OtXLyK70pPLEqC7eLj77-Mllf0gw";
 
 function get_sheets_req(sheet_id) {
     return `https://sheets.googleapis.com/v4/spreadsheets/${sheet_id}/values/'BracketedData'!A1:Z?key=${google_key}&majorDimension=COLUMNS`;
