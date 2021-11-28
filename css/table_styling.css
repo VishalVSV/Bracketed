@@ -10,6 +10,10 @@ table.bracket {
     padding: 10 20 10 20;
 }
 
+table.bracket td.team_cell:hover {
+    transform: translate(0, -5px);
+}
+
 table.bracket th:not(:empty) {
     border: 1px solid white;
     padding: 2 10 2 10;
@@ -18,4 +22,5 @@ table.bracket th:not(:empty) {
 table.bracket td {
     transition-property: opacity;
     transition-duration: 2s;
+    transition: transform ease 300ms;
 }

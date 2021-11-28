@@ -1,0 +1,47 @@
+:root {
+    --bg-color: rgb(48,48,48);
+    --text-color: white;
+    --bracket-border-color: white;
+    --bracket-round-bg: rgb(24,24,24);
+    --bracket-text-color: white;
+}
+
+[theme="dark"] {
+    --bg-color: rgb(48,48,48);
+    --text-color: white;
+    --bracket-border-color: rgb(255, 255, 255);
+    --bracket-round-bg: rgb(24,24,24);
+    --bracket-text-color: white;
+
+    --modal-header-color: white;
+    --modal-header-text-color: rgb(0, 0, 0);
+    --modal-color: rgb(143, 143, 143);
+    --modal-text-color: rgb(0, 0, 0);
+}
+
+[theme="light"] {
+    --bg-color: rgb(212, 212, 212);
+    --text-color: rgb(0, 0, 0);
+    --bracket-border-color: rgb(0, 0, 0);
+    --bracket-round-bg: rgb(170, 170, 170);
+    --bracket-text-color: rgb(0, 0, 0);
+
+    --modal-header-color: rgb(0, 0, 0);
+    --modal-header-text-color: rgb(255, 255, 255);
+    --modal-color: rgb(212, 212, 212);
+    --modal-text-color: rgb(0, 0, 0);
+}
+
+
+[theme="twilight"] {
+    --bg-color: #4C007F;
+    --text-color: rgb(0, 217, 255);
+    --bracket-border-color: rgb(0, 0, 0);
+    --bracket-round-bg: #2a0046;
+    --bracket-text-color:rgb(0, 217, 255);
+
+    --modal-header-color: #4C007F;
+    --modal-header-text-color:rgb(0, 217, 255);
+    --modal-color: rgb(0, 217, 255);
+    --modal-text-color: rgb(0, 0, 0);
+}

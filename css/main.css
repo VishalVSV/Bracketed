@@ -18,7 +18,11 @@
 }
 
 input {
-    background-color: rgb(48,48,48);
-    color: white;
+    background-color: var(--bg-color);
+    color: var(--text-color);
     font-family: 'Courier New', Courier, monospace;
+}
+
+.theme-changer {
+    cursor: pointer;
 }

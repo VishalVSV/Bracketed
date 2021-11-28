@@ -1,18 +1,58 @@
-<html>
+<html theme="dark">
     <head>
         <script src="js/bracket.js"></script>
         <script src="js/load_bracket.js"></script>
         <script src="js/alerts.js"></script>
+        <link rel="stylesheet" href="css/theming.css">
         <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
         <link rel="stylesheet" href="css/table_styling.css">
         <link rel="stylesheet" href="css/alerts.css">
+        <link rel="stylesheet" href="css/team_modal.css">
+        <style>
+            a:link {
+                color: var(--text-color);
+                background-color: transparent;
+                text-decoration: none;
+            }
+
+            a:visited {
+                color: var(--text-color);
+                background-color: transparent;
+                text-decoration: none;
+            }
+
+            a:hover {
+                color: var(--text-color);
+                background-color: transparent;
+                text-decoration: underline;
+            }
+
+            a:active {
+                color: var(--text-color);
+                background-color: transparent;
+                text-decoration: underline;
+            }
+
+            footer {
+                position: fixed; 
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 50px;
+            }
+
+            
+            .theme-changer {
+                cursor: pointer;
+            }
+        </style>
     </head>
-    <body style="background-color: rgb(48,48,48);font-family: 'Courier New', Courier, monospace;">        
-        <div id="bracket" style="display: flex;justify-content: center;align-items: center;"><div></div></div>
+    <body style="background-color: var(--bg-color);font-family: 'Courier New', Courier, monospace; color: var(--text-color);">        
+        <div id="bracket" style="display: flex;justify-content: center;align-items: center;"><div style="margin: 10% auto;font-size: 2em;">Loading...</div></div>
         <div style="position: absolute;top:0;right:0;" id="alerts">
             
         </div>
-        <div style="position: absolute;top:0;left:0;color:white;">
+        <div style="position: absolute;top:0;left:0;color:var(--text-color);">
             <div id="help">
                 Shift+R: Toggle auto refresh<br>
                 Shift+H: Toggle help<br>
@@ -22,15 +62,35 @@
             <div id="settings"></div>
             <div id="changelog" style="visibility: hidden;">
                 <strong>Changelog</strong><br>
-                + Added two sided brackets<br>
+                + Added themes<br>
+                + Added team data viewer<br>
+            </div>
+        </div>
+
+        <div class="modal" id="team_info">
+            <div class="modal-content">
+                <div class="modal-header" id="team_name">
+                    Loading...
+                </div>
+                <div style="position: absolute; top: 0; right: 5px;color: var(--modal-header-text-color);cursor: pointer;" onclick="modal.style.display='none'">&#10006;</div>
+                <div id="team_data" style="padding: 5px;">
+                    
+                </div>
             </div>
         </div>
 
         <footer>
-            <table style="float: right;color:white;text-align: center;margin: 5px;">
+            <table style="float: left;color:var(--text-color); text-align: center;margin: 5px;">
+                <tr>
+                    <span class="theme-changer" onclick="changeTheme('dark')"><img style="height: 24px; width: 24px;" src="images/theme-icons/dark.png"></span>
+                    <span class="theme-changer" onclick="changeTheme('light')"><img style="height: 24px; width: 24px;" src="images/theme-icons/light.png"></span>
+                    <span class="theme-changer" onclick="changeTheme('twilight')"><img style="height: 24px; width: 24px;" src="images/theme-icons/twilight.png"></span>
+                </tr>
+            </table>    
+            <table style="float: right;color:var(--text-color); text-align: center;margin: 5px;">
                 <tr>
                     <td style="vertical-align: middle;">Made by Vertex&nbsp;</td>
-                    <td><a  href="https://github.com/VishalVSV" target="_blank"><img src="https://github.githubassets.com/images/modules/site/icons/footer/github-mark.svg"></a></td>
+                    <td><a href="https://github.com/VishalVSV" target="_blank"><img src="https://github.githubassets.com/images/modules/site/icons/footer/github-mark.svg"></a></td>
                     <td>&nbsp;<a href='#' onclick="toggle_changelog()">Changelog</a></td>
                     <td>&nbsp;</td>
                 </tr>
@@ -39,6 +99,7 @@
         
         <script>
             var settings_panel = document.getElementById("settings");
+            var modal = document.getElementById("team_info");
 
             var settings = {
                 auto_refresh: false,
@@ -52,8 +113,8 @@
             var refresh_handler = null;
 
             if(params.get("id") != undefined) {
-                //1PToKUtw3rBWmU5AQL84wybatoKVYH_PynjCSLdH5vdA
                 load_bracket(params.get("id"));
+                load_metadata(params.get("id"));
             }
             if(params.get("auto_refresh") != undefined) {
                 start_auto_refresh();
@@ -67,13 +128,15 @@
                         settings.sheet_name = res.properties.title;
                         settings.sheet_url = res.spreadsheetUrl;
                         update_settings();
-
-                        document.title = settings.sheet_name;
                     }
                 };
 
                 xmlHttp.open("GET", get_sheets_data(params.get("id")), true);
                 xmlHttp.send(null);
+            }
+
+            function changeTheme(theme) {
+                document.documentElement.setAttribute("theme", theme);
             }
 
             if(params.get("debug") != undefined) {
@@ -97,6 +160,7 @@
                         if(params.get("id") != undefined) {
                             //1PToKUtw3rBWmU5AQL84wybatoKVYH_PynjCSLdH5vdA
                             load_bracket(params.get("id"));
+                            load_metadata(params.get("id"));
                         }
                     }, 2000);
                     customAlert(new Alert("ok", "Started auto refresh"));
@@ -118,6 +182,7 @@
                 }
                 else if(e.key == 'r') {
                     load_bracket(params.get("id"));
+                    load_metadata(params.get("id"));
                     customAlert(new Alert("ok", "Reloaded"));
                 }
                 else if(e.key == "H") {
@@ -133,8 +198,15 @@
                     }
                     bracket.reload = true;
                     load_bracket(params.get("id"));
+                    load_metadata(params.get("id"));
                 }
             });
+
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
 
             function toggle_changelog() {
                 var changelog = document.getElementById("changelog");
@@ -144,6 +216,29 @@
 
             update_settings();
             load_debug_data();
+
+            
+            let f = `⠀⠀⠀⠀⠀⠀⡀⠈⠀⠀⠀⠀⣠⠀⠀⠀⢈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⡱⣯⣌⢈⠀⣰⣏⠈⣨⠏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⢈⠀⠀⠀⠀⠐⡳⣷⣯⣾⣿⣯⣾⣏⣌⡮⠃⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠐⡳⣿⣿⣯⣿⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣟⣌⡬⠂⠀⠀⠀⠀⠀⠀
+⠀⠀⢀⢈⢈⢘⣙⣝⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⢟⠉⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠐⢑⢻⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣯⡦⠓⠀⠀⠀
+⠀⠀⠀⠀⠀⠑⣽⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣟⢙⢈⢈⠀⠀⠀⠀
+⠀⠀⠀⠀⠠⣑⠷⡿⣿⡷⡳⣷⣷⣿⠷⠳⣷⣿⣿⣿⣿⣿⠷⠳⠓⠁⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠁⠀⠀⣷⠀⡦⠀⠏⢇⠰⠃⣐⣿⣿⣿⣿⠟⠁⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠰⠯⠢⠲⠀⠀⠁⠐⠳⡱⣿⣿⠿⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠠⣿⣿⣋⣌⠈⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⡰⡄⠈⠀⠀⠀⢈⢈⣬⣿⣿⣿⣿⣯⣮⣌⣌⣌⢈⢈⠈
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡤⠦⠳⠑⠐⣷⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣬⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+
+
+█▀▄▀█ ▄▀█ █▀▄ █▀▀   █▄▄ █▄█   █░█ █▀▀ █▀█ ▀█▀ █▀▀ ▀▄▀
+█░▀░█ █▀█ █▄▀ ██▄   █▄█ ░█░   ▀▄▀ ██▄ █▀▄ ░█░ ██▄ █░█
+`;
+
+            console.log(f);
         </script>
     </body>
 </html>
