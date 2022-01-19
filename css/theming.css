@@ -45,3 +45,7 @@
     --modal-color: rgb(0, 217, 255);
     --modal-text-color: rgb(0, 0, 0);
 }
+
+body {
+    transition: background-color 0.1s linear;   
+}
