@@ -52,10 +52,10 @@
     </head>
     <body style="background-color: var(--bg-color);font-family: 'Courier New', Courier, monospace; color: var(--text-color);">        
         <div id="bracket" style="display: flex;justify-content: center;align-items: center;"><div style="margin: 10% auto;font-size: 2em;">Loading...</div></div>
-        <div style="position: absolute;top:0;right:0;" id="alerts">
+        <div style="position: absolute;top:0;right:0;" id="alerts" class="non-bracket">
             
         </div>
-        <div style="position: absolute;top:0;left:0;color:var(--text-color);">
+        <div style="position: absolute;top:0;left:0;color:var(--text-color);" class="non-bracket">
             <div id="help">
                 Shift+R: Toggle auto refresh<br>
                 Shift+H: Toggle help<br>
@@ -70,7 +70,7 @@
             </div>
         </div>
 
-        <div class="modal" id="team_info">
+        <div class="modal non-bracket" id="team_info">
             <div class="modal-content">
                 <div class="modal-header" id="team_name">
                     Loading...
@@ -82,7 +82,7 @@
             </div>
         </div>
 
-        <footer>
+        <footer class="non-bracket">
             <table style="float: left;color:var(--text-color); text-align: center;margin: 5px;">
                 <tr>
                     <span class="theme-changer" onclick="changeTheme('dark')"><img style="height: 24px; width: 24px;" src="images/theme-icons/dark.png"></span>
@@ -114,6 +114,12 @@
             const params = new URLSearchParams(location.search);
 
             var refresh_handler = null;
+
+            if(params.get("raw") != undefined) {
+                Array.from(document.getElementsByClassName('non-bracket')).forEach((m) => {
+                    m.hidden = true;
+                });
+            }
 
             if(params.get("id") != undefined) {
                 load_bracket(params.get("id"));
